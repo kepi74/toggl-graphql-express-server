@@ -1,21 +1,25 @@
 import bodyParser from 'body-parser';
-import express from 'express';
+import connect from 'connect';
 import graphqlHTTP from 'express-graphql';
-import { graphqlExpress } from 'apollo-server-express';
+import http from 'http';
+import { graphqlConnect } from 'apollo-server-express';
 
-import myGraphQLSchema from './data/schema';
+import createReportsApi from './data/ReportsAPI';
+import resolvers from './resolvers/mocks';
 
-const PORT = 9000;
+const reportsApiSchema = createReportsApi(resolvers);
 
-const app = express();
+const PORT = 3000;
+
+const app = connect();
 
 // bodyParser is needed just for POST.
-app.use('/graphql', bodyParser.json(), graphqlExpress({ schema: myGraphQLSchema }));
+app.use('/graphql', bodyParser.json());
+app.use('/graphql', graphqlConnect({ schema: reportsApiSchema }));
 
-// GraphQL Explorer
 app.use('/graphql-explorer', graphqlHTTP({
-  schema: myGraphQLSchema,
+  schema: reportsApiSchema,
   graphiql: true,
 }));
 
-app.listen(PORT);
+http.createServer(app).listen(PORT);
